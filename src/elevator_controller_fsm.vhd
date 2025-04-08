@@ -95,21 +95,46 @@ begin
 	-- CONCURRENT STATEMENTS ------------------------------------------------------------------------------
 	
 	-- Next State Logic
-  
+--    f_Q_next <= ((not f_Q(2)) and (not f_Q(1)) and f_Q(0) and (not i_up_down) and (not i_stop)) or
+--                   ((not f_Q(2)) and (not f_Q(1)) and f_Q(0) and i_stop) or
+--                   ((not f_Q(2)) and f_Q(1) and (not f_Q(0)) and (not i_up_down) and (not i_stop)) or
+--                   ((not f_Q(2)) and f_Q(1) and (not f_Q(0)) and i_up_down and (not i_stop)) or
+--                   ((not f_Q(2)) and f_Q(1) and f_Q(0) and i_stop) or
+--                   (f_Q(2) and (not f_Q(1)) and (not f_Q(0)) and (not i_up_down) and (not i_stop));
+    -- Next State Logic
+    f_Q_next <= s_floor2 when (i_up_down = '1' and f_Q = s_floor1) else -- going up
+                s_floor3 when (i_up_down = '1' and f_Q = s_floor2) else -- going up
+                s_floor4 when (i_up_down = '1' and f_Q = s_floor3) else -- going up
+                s_floor4 when (i_up_down = '1' and f_Q = s_floor4) else -- going up
+                
+                s_floor1 when (i_up_down = '0' and f_Q = s_floor1) else -- going down
+                s_floor1 when (i_up_down = '0' and f_Q = s_floor2) else -- going down
+                s_floor2 when (i_up_down = '0' and f_Q = s_floor3) else -- going down
+                s_floor3 when (i_up_down = '0' and f_Q = s_floor4) else -- going down
+                
+                s_floor2; -- default case
+                    
 	-- Output logic
-
+    o_floor <= "0001" when(f_Q = s_floor1) else
+               "0010" when(f_Q = s_floor2) else
+               "0011" when(f_Q = s_floor3) else
+               "0100" when(f_Q = s_floor4);
 	-------------------------------------------------------------------------------------------------------
 	
 	-- PROCESSES ------------------------------------------------------------------------------------------	
-	
-	-- State register ------------
-	
-	
-	-------------------------------------------------------------------------------------------------------
-	
-	
-
-
+	register_proc : process (i_clk, i_reset,i_stop)
+	begin-- State register ------------
+	if(rising_edge(i_clk)) then
+	    if i_reset = '1' then
+	        f_Q <= s_floor2;   
+	    elsif i_stop = '1' then
+	        f_Q <= f_Q;    
+	    elsif (rising_edge(i_clk)) then
+	        f_Q <= f_Q_next;
+	        -- next state becomes current state
+        end if;
+     end if;
+    end process register_proc;
 
 end Behavioral;
 
